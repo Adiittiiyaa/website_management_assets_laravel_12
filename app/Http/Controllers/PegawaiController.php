@@ -53,48 +53,63 @@ class PegawaiController extends Controller
      * Menyimpan data pegawai baru ke database.
      */
     public function store(Request $request)
-    {
+{
+    // LOGIKA PENENTUAN USER ID
+    if (Auth::user()->role === 'admin') {
+        // 1. Jika Admin, wajib ada input 'id_pengguna' dari form
+        $request->validate([
+            'id_pengguna' => 'required|exists:users,id|unique:pegawai,id_pengguna'
+        ], [
+            'id_pengguna.required' => 'Harap pilih akun user.',
+            'id_pengguna.unique' => 'User ini sudah terdaftar sebagai pegawai.'
+        ]);
+        
+        // Ambil dari input form
+        $userId = $request->id_pengguna;
+        
+    } else {
+        // 2. Jika User Biasa, ambil dari sesi login
         $userId = Auth::id();
-
-        // 1. Cek Duplikasi (Double Protection)
+        
+        // Cek Duplikasi untuk User Biasa
         if (Pegawai::where('id_pengguna', $userId)->exists()) {
             return redirect()->back()->with('error', 'Akun Anda sudah terdaftar sebagai pegawai.');
         }
-
-        // 2. VALIDASI INPUT
-        // Kita menghapus 'status_pegawai' dari validasi agar tidak error karena tidak ada inputnya di form
-        $validated = $request->validate([
-            'nip_pegawai' => [
-                'required',
-                'string',
-                'unique:pegawai,nip_pegawai',
-                new NipValid()
-            ],
-            'nama_pegawai'   => 'required|string|max:255',
-            'bidang_kerja'   => 'required|string|max:255',
-            'jabatan'        => 'required|string|max:255',
-        ]);
-
-        // 3. SIMPAN DATA
-        Pegawai::create([
-            'nip_pegawai'    => $validated['nip_pegawai'],
-            'nama_pegawai'   => $validated['nama_pegawai'],
-            'bidang_kerja'   => $validated['bidang_kerja'],
-            'jabatan'        => $validated['jabatan'],            
-            'status_pegawai' => 'aktif', 
-            
-            'id_pengguna'    => $userId,
-        ]);
-
-        // 4. REDIRECT BERDASARKAN ROLE
-        if (Auth::user()->role === 'admin') {
-            return redirect()->route('pegawai.index')
-                ->with('success', 'Data pegawai berhasil disimpan.');
-        } else {
-            return redirect()->route('dashboard')
-                ->with('success', 'Selamat! Data kepegawaian Anda berhasil didaftarkan.');
-        }
     }
+
+    // VALIDASI INPUT LAINNYA
+    $validated = $request->validate([
+        'nip_pegawai' => [
+            'required',
+            'string',
+            'unique:pegawai,nip_pegawai',
+            new NipValid()
+        ],
+        'nama_pegawai'   => 'required|string|max:255',
+        'bidang_kerja'   => 'required|string|max:255',
+        'jabatan'        => 'required|string|max:255',
+    ]);
+
+    // SIMPAN DATA
+    Pegawai::create([
+        'nip_pegawai'    => $validated['nip_pegawai'],
+        'nama_pegawai'   => $validated['nama_pegawai'],
+        'bidang_kerja'   => $validated['bidang_kerja'],
+        'jabatan'        => $validated['jabatan'],            
+        'status_pegawai' => 'aktif', 
+        
+        'id_pengguna'    => $userId, // Sekarang ini sudah dinamis (Input Form atau Auth)
+    ]);
+
+    // REDIRECT BERDASARKAN ROLE
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('pegawai.index')
+            ->with('success', 'Data pegawai berhasil disimpan.');
+    } else {
+        return redirect()->route('dashboard')
+            ->with('success', 'Selamat! Data kepegawaian Anda berhasil didaftarkan.');
+    }
+}
 
     /**
      * Menampilkan form edit pegawai.

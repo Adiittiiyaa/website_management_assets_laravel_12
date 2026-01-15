@@ -8,7 +8,7 @@
                 <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                     <div>
                         <h1 class="text-3xl font-extrabold text-[#171717] tracking-tight">Halo, Selamat Datang Kembali Tuan !!!</h1>
-                        <p class="mt-2 text-slate-500">Berikut adalah ringkasan performa dan data terbaru hari ini.</p>
+                        <p class="mt-2 text-slate-500">Berikut adalah ringkasan performa dan pertumbuhan data bulan ini.</p>
                     </div>
 
                     {{-- Time Widget --}}
@@ -32,49 +32,104 @@
                     </div>
                 </div>
 
-                {{-- 2. STATISTICS GRID --}}
+                {{-- 2. STATISTICS GRID (UPDATED WITH REALTIME LOGIC) --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     
-                    {{-- Card 1: Total Pegawai --}}
+                    {{-- Card 1: Total Pegawai (LOGIC UPDATED) --}}
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all duration-300">
                         <div class="flex justify-between items-start z-10 relative">
                             <div>
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pegawai</p>
-                                <h3 class="text-3xl font-black text-[#171717] mt-2">{{ \App\Models\Pegawai::count() }}</h3>
-                                <p class="text-xs text-[#fd2800] font-medium mt-1 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                                    Data Keseluruhan
+                                
+                                {{-- Menggunakan Data Realtime dari Route --}}
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-black text-[#171717] mt-2">{{ $stats['pegawai']['total'] }}</h3>
+                                    
+                                    {{-- Indikator Pertumbuhan --}}
+                                    @if($stats['pegawai']['diff'] != 0)
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md {{ $stats['pegawai']['is_positive'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $stats['pegawai']['is_positive'] ? '+' : '' }}{{ $stats['pegawai']['percentage'] }}%
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <p class="text-xs text-slate-500 font-medium mt-1 flex items-center gap-1">
+                                    @if($stats['pegawai']['is_positive'])
+                                        <svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                        <span class="text-green-600">+{{ $stats['pegawai']['diff'] }} org</span>
+                                    @else
+                                        <svg class="w-3 h-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                                        <span class="text-red-600">{{ $stats['pegawai']['diff'] }} org</span>
+                                    @endif
+                                    <span class="opacity-70">vs bulan lalu</span>
                                 </p>
                             </div>
                             <div class="p-3 bg-red-50 rounded-xl text-[#fd2800]">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                             </div>
                         </div>
-                        {{-- Decorative Blob --}}
                         <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-red-50 rounded-full blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
                     </div>
 
-                    {{-- Card 2: Pegawai Aktif --}}
+                    {{-- Card 2: User System (MENGGANTIKAN ATAU MENAMBAHKAN STATISTIK USER) --}}
+                    {{-- Disini saya menggunakan slot Statistik User (Logika Pertambahan User) --}}
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all duration-300">
                         <div class="flex justify-between items-start z-10 relative">
                             <div>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Aktif</p>
-                                <h3 class="text-3xl font-black text-[#171717] mt-2">{{ \App\Models\Pegawai::where('status_pegawai', 'aktif')->count() }}</h3>
-                                <p class="text-xs text-green-600 font-medium mt-1">Siap Bertugas</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total User Akun</p>
+                                
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-black text-[#171717] mt-2">{{ $stats['user']['total'] }}</h3>
+                                    @if($stats['user']['diff'] != 0)
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md {{ $stats['user']['is_positive'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $stats['user']['is_positive'] ? '+' : '' }}{{ $stats['user']['percentage'] }}%
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <p class="text-xs text-blue-600 font-medium mt-1 flex items-center gap-1">
+                                    @if($stats['user']['is_positive'])
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                        <span>+{{ $stats['user']['diff'] }} baru</span>
+                                    @else
+                                        <span>Stabil</span>
+                                    @endif
+                                </p>
                             </div>
-                            <div class="p-3 bg-green-50 rounded-xl text-green-600">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <div class="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Card 3: Total Aset --}}
+                    {{-- Card 3: Total Aset (LOGIC UPDATED) --}}
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all duration-300">
                         <div class="flex justify-between items-start z-10 relative">
                             <div>
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Aset</p>
-                                <h3 class="text-3xl font-black text-[#171717] mt-2">{{ \App\Models\Aset::count() }}</h3>
-                                <p class="text-xs text-amber-600 font-medium mt-1">Inventaris Terdata</p>
+                                
+                                <div class="flex items-baseline gap-2">
+                                    <h3 class="text-3xl font-black text-[#171717] mt-2">{{ $stats['aset']['total'] }}</h3>
+                                    
+                                    {{-- Indikator Pertumbuhan Aset --}}
+                                    @if($stats['aset']['diff'] != 0)
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md {{ $stats['aset']['is_positive'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $stats['aset']['is_positive'] ? '+' : '' }}{{ $stats['aset']['percentage'] }}%
+                                        </span>
+                                    @endif
+                                </div>
+                                
+                                <p class="text-xs text-amber-600 font-medium mt-1 flex items-center gap-1">
+                                    @if($stats['aset']['is_positive'])
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                        <span>+{{ $stats['aset']['diff'] }} item baru</span>
+                                    @elseif($stats['aset']['diff'] < 0)
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                                        <span>{{ $stats['aset']['diff'] }} dihapus</span>
+                                    @else
+                                        <span>Tidak ada perubahan</span>
+                                    @endif
+                                </p>
                             </div>
                             <div class="p-3 bg-amber-50 rounded-xl text-amber-600">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
@@ -105,7 +160,7 @@
                 {{-- 3. CONTENT SPLIT --}}
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
-                    {{-- LEFT COLUMN: TABLE --}}
+                    {{-- LEFT COLUMN: TABLE (Using $latestPegawai variable passed from route) --}}
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                             <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
@@ -129,7 +184,8 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
-                                        @forelse(\App\Models\Pegawai::latest()->take(5)->get() as $pegawai)
+                                        {{-- MENGGUNAKAN VARIABEL $latestPegawai DARI ROUTE --}}
+                                        @forelse($latestPegawai as $pegawai)
                                         <tr class="hover:bg-slate-50 transition duration-150">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center gap-4">
@@ -175,6 +231,8 @@
                                 </table>
                             </div>
                         </div>
+
+                        {{-- TAMBAHAN: TABEL ASET TERBARU (Opsional jika ingin ditampilkan, data sudah ada di controller) --}}
                     </div>
 
                     {{-- RIGHT COLUMN: SIDEBAR --}}
@@ -222,13 +280,14 @@
                                     <span class="text-green-400 font-bold">● ONLINE</span>
                                 </div>
                                 <div class="flex justify-between items-center pb-2 border-b border-white/10">
-                                    <span class="text-slate-400">Latency</span>
-                                    <span class="text-white">999ms</span>
+                                    <span class="text-slate-400">Total Asset Value</span>
+                                    {{-- Contoh penggunaan statistik asset total jika ada --}}
+                                    <span class="text-white">{{ $stats['aset']['total'] }} Item</span>
                                 </div>
                                 <div>
-                                    <span class="text-slate-400 block mb-1">Load</span>
+                                    <span class="text-slate-400 block mb-1">Server Load</span>
                                     <div class="w-full bg-white/10 rounded-full h-1.5">
-                                        <div class="bg-[#fd2800] h-1.5 rounded-full" style="width: 100%"></div>
+                                        <div class="bg-[#fd2800] h-1.5 rounded-full" style="width: 35%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -238,11 +297,7 @@
             </div>
         </div>
 
-        {{-- 
-            ==========================================
-            MODAL POPUP FORM
-            ==========================================
-        --}}
+        {{-- MODAL POPUP FORM (TIDAK DIUBAH, HANYA DIPASTIKAN VALID) --}}
         <div 
             x-show="showModal" 
             style="display: none;"
@@ -251,7 +306,6 @@
             role="dialog" 
             aria-modal="true"
         >
-            {{-- Backdrop --}}
             <div 
                 x-show="showModal"
                 x-transition:enter="ease-out duration-300"
@@ -265,8 +319,6 @@
             ></div>
 
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                
-                {{-- Modal Panel --}}
                 <div 
                     x-show="showModal"
                     x-transition:enter="ease-out duration-300"
@@ -277,8 +329,6 @@
                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200"
                 >
-                    
-                    {{-- Header --}}
                     <div class="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                         <div>
                             <h3 class="text-lg font-bold text-[#171717]" id="modal-title">Tambah Pegawai</h3>
@@ -291,12 +341,10 @@
                         </button>
                     </div>
 
-                    {{-- Form Body --}}
                     <form action="{{ route('pegawai.store') }}" method="POST">
                         @csrf
                         <div class="px-6 py-6 space-y-5">
-                            
-                            {{-- Input: User --}}
+                            {{-- Input: User (Menggunakan variabel $users dari route) --}}
                             <div class="space-y-1.5">
                                 <label class="block text-sm font-semibold text-[#171717]">Tautkan Akun User <span class="text-[#fd2800]">*</span></label>
                                 <div class="relative">
@@ -312,14 +360,12 @@
                                 </div>
                             </div>
 
-                            {{-- Grid: NIP & Nama --}}
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div class="space-y-1.5">
                                     <label class="block text-sm font-semibold text-[#171717]">NIP <span class="text-[#fd2800]">*</span></label>
                                     <input type="text" name="nip_pegawai" value="{{ old('nip_pegawai') }}" class="block w-full rounded-lg border-slate-200 shadow-sm focus:border-[#fd2800] focus:ring-[#fd2800] sm:text-sm py-2.5 bg-slate-50/50 text-[#171717]" placeholder="Contoh: 199001...">
                                     @error('nip_pegawai') <p class="text-[#fd2800] text-xs mt-1 font-medium">{{ $message }}</p> @enderror
                                 </div>
-
                                 <div class="space-y-1.5">
                                     <label class="block text-sm font-semibold text-[#171717]">Nama Lengkap <span class="text-[#fd2800]">*</span></label>
                                     <input type="text" name="nama_pegawai" value="{{ old('nama_pegawai') }}" class="block w-full rounded-lg border-slate-200 shadow-sm focus:border-[#fd2800] focus:ring-[#fd2800] sm:text-sm py-2.5 bg-slate-50/50 text-[#171717]" placeholder="Nama sesuai KTP">
@@ -327,7 +373,6 @@
                                 </div>
                             </div>
 
-                            {{-- Grid: Jabatan & Bidang --}}
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div class="space-y-1.5">
                                     <label class="block text-sm font-semibold text-[#171717]">Jabatan</label>
@@ -340,23 +385,18 @@
                                     @error('bidang_kerja') <p class="text-[#fd2800] text-xs mt-1 font-medium">{{ $message }}</p> @enderror
                                 </div>
                             </div>
-
                             <input type="hidden" name="status_pegawai" value="aktif">
                         </div>
 
-                        {{-- Footer Actions --}}
                         <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3 rounded-b-2xl border-t border-slate-100">
-                            {{-- Button Submit --}}
                             <button type="submit" class="inline-flex w-full justify-center rounded-xl bg-[#171717] px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#fd2800] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fd2800] transition-colors duration-200 sm:w-auto">
                                 Simpan Data
                             </button>
-                            {{-- Button Batal --}}
                             <button @click="showModal = false" type="button" class="inline-flex w-full justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto transition-colors duration-200">
                                 Batal
                             </button>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
